@@ -1,7 +1,8 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup 
 from config import ADMIN
- 
+from utils import verify_user, check_token, check_verification, get_token
+from info import VERIFY, VERIFY_TUTORIAL, BOT_USERNAME
 
 @Client.on_message(filters.command("start") & filters.private)                             
 async def start_cmd(client, msg):
