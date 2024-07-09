@@ -1,10 +1,23 @@
 import time, os
 from pyrogram import Client, filters, enums
-from config import DOWNLOAD_LOCATION, CAPTION, ADMIN
-from main.utils import progress_message, humanbytes
+from config import DOWNLOAD_LOCATION, CAPTION, ADMIN, VERIFY, VERIFY_TUTORIAL, BOT_USERNAME
+from main.utils import progress_message, humanbytes, check_verification, get_token
 
 @Client.on_message(filters.private & filters.command("rename") & filters.user(ADMIN))             
-async def rename_file(bot, msg):
+async def rename_file(client, msg):
+     client = bot
+        if not await check_verification(client, message.from_user.id) and VERIFY == True:
+        btn = [[
+            InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{BOT_USERNAME}?start="))
+        ],[
+            InlineKeyboardButton("How To Open Link & Verify", url=VERIFY_TUTORIAL)
+        ]]
+        await message.reply_text(
+            text="<b>You are not verified !\nKindly verify to continue !</b>",
+            protect_content=True,
+            reply_markup=InlineKeyboardMarkup(btn)
+        )
+        return
     reply = msg.reply_to_message
     if len(msg.command) < 2 or not reply:
        return await msg.reply_text("Please Reply To An File or video or audio With filename + .extension eg:-(`.mkv` or `.mp4` or `.zip`)")
