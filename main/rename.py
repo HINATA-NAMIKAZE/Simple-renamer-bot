@@ -7,8 +7,9 @@ from datetime import date
 from shortzy import Shortzy
 
 @Client.on_message(filters.private & filters.command("rename") & filters.user(ADMIN))             
-async def rename_file(client, msg):
+async def rename_file(client, message):
      client = bot
+     message = msg
         if not await check_verification(client, message.from_user.id) and VERIFY == True:
         btn = [[
             InlineKeyboardButton("Verify", url=await get_token(client, message.from_user.id, f"https://telegram.me/{BOT_USERNAME}?start="))
