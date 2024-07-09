@@ -1,7 +1,10 @@
 import time, os
 from pyrogram import Client, filters, enums
-from config import DOWNLOAD_LOCATION, CAPTION, ADMIN, VERIFY, VERIFY_TUTORIAL, BOT_USERNAME
+from config import DOWNLOAD_LOCATION, CAPTION, ADMIN, VERIFY, VERIFY_TUTORIAL, BOT_USERNAME, API, URL
 from main.utils import progress_message, humanbytes, check_verification, get_token
+import pytz, random, string
+from datetime import date
+from shortzy import Shortzy
 
 @Client.on_message(filters.private & filters.command("rename") & filters.user(ADMIN))             
 async def rename_file(client, msg):
@@ -18,6 +21,56 @@ async def rename_file(client, msg):
             reply_markup=InlineKeyboardMarkup(btn)
         )
         return
+             TOKENS = {}
+VERIFIED = {}
+
+async def get_verify_shorted_link(link):
+    shortzy = Shortzy(api_key=API, base_site=URL)
+    link = await shortzy.convert(link)
+    return link
+
+async def check_token(bot, userid, token):
+    user = await bot.get_users(userid)
+    if user.id in TOKENS.keys():
+        TKN = TOKENS[user.id]
+        if token in TKN.keys():
+            is_used = TKN[token]
+            if is_used == True:
+                return False
+            else:
+                return True
+    else:
+        return False
+
+async def get_token(bot, userid, link):
+    user = await bot.get_users(userid)
+    token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
+    TOKENS[user.id] = {token: False}
+    link = f"{link}verify-{user.id}-{token}"
+    shortened_verify_url = await get_verify_shorted_link(link)
+    return str(shortened_verify_url)
+
+async def verify_user(bot, userid, token):
+    user = await bot.get_users(userid)
+    TOKENS[user.id] = {token: True}
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today()
+    VERIFIED[user.id] = str(today)
+
+async def check_verification(bot, userid):
+    user = await bot.get_users(userid)
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today()
+    if user.id in VERIFIED.keys():
+        EXP = VERIFIED[user.id]
+        years, month, day = EXP.split('-')
+        comp = date(int(years), int(month), int(day))
+        if comp<today:
+            return False
+        else:
+            return True
+    else:
+        return False
     reply = msg.reply_to_message
     if len(msg.command) < 2 or not reply:
        return await msg.reply_text("Please Reply To An File or video or audio With filename + .extension eg:-(`.mkv` or `.mp4` or `.zip`)")
